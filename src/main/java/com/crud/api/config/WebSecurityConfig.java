@@ -32,6 +32,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter  {
 			.csrf().disable()
 			.authorizeRequests()
 			.antMatchers("/auth/**").permitAll()
+			// .antMatchers("/geoLocation/**").permitAll()
+			.antMatchers("/fileUpload/**").permitAll()
 			.anyRequest().authenticated()
 			.and()
 			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
