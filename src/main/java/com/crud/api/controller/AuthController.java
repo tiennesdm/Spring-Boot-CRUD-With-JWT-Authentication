@@ -10,12 +10,15 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.crud.api.Kafka.KafkaProducer;
 import com.crud.api.entity.AuthModel;
+import com.crud.api.entity.KafkaModel;
 import com.crud.api.entity.UserModel;
 import com.crud.api.response.ErrorObject;
 import com.crud.api.response.SuccessObject;
@@ -23,9 +26,12 @@ import com.crud.api.security.CustonUserDetailService;
 import com.crud.api.service.UserService;
 import com.crud.api.util.JwtTokenUtil;
 
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+    @Autowired
+    private final KafkaProducer kafkaProducer;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -55,6 +61,25 @@ public class AuthController {
         }
 
     }
+  
+
+    public AuthController(KafkaProducer kafkaProducer) {
+        this.kafkaProducer = kafkaProducer;
+    }
+
+    @GetMapping("/send-message")
+    public String sendMessage() {
+        kafkaProducer.sendMessage("Hello, Kafka!");
+        return "Message sent to Kafka topic!";
+    }
+
+    @PostMapping("/send-kafka")
+    public ResponseEntity<Object> sendMessage(@RequestBody KafkaModel kafka){
+            kafkaProducer.sendMessage(kafka.getMessage());
+            SuccessObject successObject = new SuccessObject(200,kafka.getMessage(), kafka.getMessage());
+            return new ResponseEntity<>(successObject, HttpStatus.CREATED);
+    }
+    
 
     private ResponseEntity<ErrorObject> authenticate(String email, String password) {
 
